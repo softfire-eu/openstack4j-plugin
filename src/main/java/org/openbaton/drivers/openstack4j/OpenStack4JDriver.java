@@ -331,10 +331,10 @@ public class OpenStack4JDriver extends VimDriver {
       OSClient os = this.authenticate(vimInstance);
       Map<String, String> map = new HashMap<>();
       map.put("limit", "100");
-      List<? extends Image> images = os.images().list(map);
+      List<? extends org.openstack4j.model.image.v2.Image> images = os.imagesV2().list(map);
       List<NFVImage> nfvImages = new ArrayList<>();
-      for (Image image : images) {
-        nfvImages.add(Utils.getImage(image));
+      for (org.openstack4j.model.image.v2.Image image : images) {
+        nfvImages.add(Utils.getImageV2(image));
       }
       log.info(
           "Listed images for VimInstance with name: "
