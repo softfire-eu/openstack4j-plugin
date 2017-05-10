@@ -469,9 +469,10 @@ public class OpenStack4JDriver extends VimDriver {
     String tenantId = null;
     if (os.supportsIdentity()) {
       if (os instanceof OSClient.OSClientV2) {
+        List<? extends Tenant> tenants = ((OSClient.OSClientV2) os).identity().tenants().list();
         log.trace(
-            "Available tenants (v2): " + ((OSClient.OSClientV2) os).identity().tenants().list());
-        for (Tenant currentTenant : ((OSClient.OSClientV2) os).identity().tenants().list()) {
+            "Available tenants (v2): " + tenants);
+        for (Tenant currentTenant : tenants) {
           if (currentTenant.getName().equals(tenantName)) {
             tenantId = currentTenant.getId();
             break;
@@ -547,6 +548,8 @@ public class OpenStack4JDriver extends VimDriver {
     if (keys != null && !keys.isEmpty()) {
       userdata = addKeysToUserData(userdata, keys);
     }
+    if (userdata == null)
+      userdata = "";
     log.trace("Userdata: " + userdata);
 
     Server server =

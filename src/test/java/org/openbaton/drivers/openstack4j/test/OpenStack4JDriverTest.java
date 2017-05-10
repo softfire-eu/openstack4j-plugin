@@ -1,14 +1,5 @@
 package org.openbaton.drivers.openstack4j.test;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -24,6 +15,16 @@ import org.openstack4j.api.OSClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
 /** Created by lto on 11/01/2017. */
 public class OpenStack4JDriverTest {
   private static Properties properties;
@@ -37,9 +38,9 @@ public class OpenStack4JDriverTest {
     try {
       properties.load(
           new InputStreamReader(
-              OpenStack4JDriverTest.class.getResourceAsStream("/test.properties.default")));
+              OpenStack4JDriverTest.class.getResourceAsStream("/test.properties")));
     } catch (IOException e) {
-      log.error("Missing test.properties file");
+      log.error("Missing 'test.properties' file, please use test.properties.default to create it");
     }
     osd = new OpenStack4JDriver();
     vimInstance = getVimInstance();
@@ -121,6 +122,7 @@ public class OpenStack4JDriverTest {
       VNFDConnectionPoint cp = new VNFDConnectionPoint();
       cp.setVirtual_link_reference(name);
       cp.setInterfaceId(interFaceId++);
+      connectionPoints.add(cp);
     }
 
     Server server =
@@ -216,10 +218,10 @@ public class OpenStack4JDriverTest {
         properties.getProperty("vim.instance.url", "http://127.0.0.1/identity/v3"));
     vimInstance.setUsername(properties.getProperty("vim.instance.username", "test"));
     vimInstance.setPassword(properties.getProperty("vim.instance.password", "test"));
-    if (properties.getProperty("vim.instance.project.name", "test") != null) {
-      vimInstance.setTenant(properties.getProperty("vim.instance.project.name", "test"));
+    if (properties.getProperty("vim.instance.project.id") != null) {
+      vimInstance.setTenant(properties.getProperty("vim.instance.project.id"));
     } else {
-      vimInstance.setTenant(properties.getProperty("vim.instance.project.id", "test_id"));
+      vimInstance.setTenant(properties.getProperty("vim.instance.project.name", "test"));
     }
     return vimInstance;
   }
