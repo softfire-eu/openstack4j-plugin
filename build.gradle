@@ -19,6 +19,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
+        classpath 'se.transmode.gradle:gradle-docker:1.2'
     }
 }
 plugins {
@@ -29,6 +30,7 @@ plugins {
 
 apply plugin: 'java'
 apply plugin: 'idea'
+apply plugin: 'docker'
 apply plugin: 'eclipse'
 apply plugin: 'jacoco'
 
@@ -65,7 +67,7 @@ project.ext {
      * gradle Related Vars
      */
     mainClass = 'org.openbaton.drivers.openstack4j.OpenStack4JDriver'
-    obVersion = '3.2.1'
+    obVersion = '4.0.0'
     //------------------------------------------------//
 }
 
@@ -74,6 +76,7 @@ apply from: 'gradle/gradle/run.application.java.gradle'
 apply from: 'gradle/gradle/git.release.gradle'
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven {
         url "https://oss.sonatype.org/content/repositories/snapshots/"
@@ -83,10 +86,6 @@ repositories {
     }
 }
 dependencies {
-    compile 'org.openbaton:catalogue:' + obVersion
-    compile 'org.openbaton:monitoring:' + obVersion
-    compile 'org.openbaton:vim-drivers:' + obVersion
-    compile 'org.openbaton:exception:' + obVersion
     compile 'org.openbaton:plugin-sdk:' + obVersion
 
     compile 'org.apache.jclouds.labs:openstack-glance:2.0.0'
@@ -108,6 +107,7 @@ dependencies {
 }
 
 apply from: 'gradle/gradle/packaging.plugin-vimdriver-openstack.debian.gradle'
+apply from: 'gradle/gradle/packaging.plugin-vimdriver-openstack.docker.gradle'
 compileJava.dependsOn tasks.googleJavaFormat
 
 

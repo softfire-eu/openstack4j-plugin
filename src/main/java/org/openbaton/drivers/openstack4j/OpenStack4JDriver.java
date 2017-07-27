@@ -428,11 +428,11 @@ public class OpenStack4JDriver extends VimDriver {
       List<Network> nfvNetworks = new ArrayList<>();
       for (org.openstack4j.model.network.Network network : networks) {
         log.trace("Check network: " + network);
-        log.trace(
-            "Check if network belongs to tenant -> "
-                + network.getTenantId()
-                + "=="
-                + getTenantFromName(os, vimInstance.getTenant()));
+        //        log.trace(
+        //            "Check if network belongs to tenant -> "
+        //                + network.getTenantId()
+        //                + "=="
+        //                + getTenantFromName(os, vimInstance.getTenant()));
         if ((network.isRouterExternal() || network.isShared())
             || (isV3API(vimInstance) && network.getTenantId().equals(vimInstance.getTenant())
                 || (!isV3API(vimInstance)
