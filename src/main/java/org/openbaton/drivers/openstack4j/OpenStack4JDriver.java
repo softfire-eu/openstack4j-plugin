@@ -59,6 +59,8 @@ import org.openstack4j.model.compute.Address;
 import org.openstack4j.model.compute.Flavor;
 import org.openstack4j.model.compute.QuotaSet;
 import org.openstack4j.model.compute.ServerCreate;
+import org.openstack4j.model.compute.builder.ServerCreateBuilder;
+import org.openstack4j.model.compute.ext.AvailabilityZone;
 import org.openstack4j.model.identity.v2.Tenant;
 import org.openstack4j.model.identity.v3.Project;
 import org.openstack4j.model.identity.v3.Region;
@@ -203,28 +205,54 @@ public class OpenStack4JDriver extends VimDriver {
       }
       Flavor flavor4j = getFlavorFromName(vimInstance, flavor);
       flavor = flavor4j.getId();
+
+      boolean useAZ = false;
+
+      if (vimInstance.getLocation() != null
+          && vimInstance.getLocation().getName() != null
+          && !vimInstance.getLocation().getName().isEmpty()) {
+
+        String locationName = vimInstance.getLocation().getName();
+
+        log.debug(String.format("Searching for AZ '%s'...", locationName));
+
+        List<? extends AvailabilityZone> azList = os.compute().zones().list();
+
+        if (log.isDebugEnabled()) {
+          for (AvailabilityZone az : azList) {
+            log.debug(String.format("Found AZ '%s'", az.getZoneName()));
+          }
+        }
+
+        for (AvailabilityZone az : azList) {
+          if (az.getZoneName().equals(locationName)) {
+            useAZ = true;
+            break;
+          }
+        }
+      }
+
       // temporary workaround for getting first security group as it seems not supported adding multiple security groups
       ServerCreate sc;
-      if (keypair == null || keypair.equals("")) {
-        sc =
-            Builders.server()
-                .name(name)
-                .flavor(flavor)
-                .image(imageId)
-                .networks(networks)
-                .userData(new String(Base64.encodeBase64(userData.getBytes())))
-                .build();
-      } else {
-        sc =
-            Builders.server()
-                .name(name)
-                .flavor(flavor)
-                .image(imageId)
-                .keypairName(keypair)
-                .networks(networks)
-                .userData(new String(Base64.encodeBase64(userData.getBytes())))
-                .build();
+      ServerCreateBuilder scBuilder =
+          Builders.server()
+              .name(name)
+              .flavor(flavor)
+              .image(imageId)
+              .networks(networks)
+              .userData(new String(Base64.encodeBase64(userData.getBytes())));
+
+      if (keypair != null && !keypair.isEmpty()) {
+        scBuilder.keypairName(keypair);
       }
+
+      if (useAZ) {
+        log.info(
+            String.format("Using Availability Zone '%s'", vimInstance.getLocation().getName()));
+        scBuilder.availabilityZone(vimInstance.getLocation().getName());
+      }
+
+      sc = scBuilder.build();
 
       for (String sg : secGroup) {
         sc.addSecurityGroup(sg);
