@@ -494,26 +494,55 @@ public class OpenStack4JDriver extends VimDriver {
 
   @Override
   public List<NFVImage> listImages(VimInstance vimInstance) throws VimDriverException {
+
+    OSClient os = this.authenticate(vimInstance);
+
+    Map<String, String> map = new HashMap<>();
+    map.put("limit", "100");
+
+    List<? extends org.openstack4j.model.image.v2.Image> v2Images = null;
+    List<? extends Image> v1Images = null;
+
     try {
-      OSClient os = this.authenticate(vimInstance);
-      Map<String, String> map = new HashMap<>();
-      map.put("limit", "100");
-      List<? extends Image> images = os.images().list(map);
-      List<NFVImage> nfvImages = new ArrayList<>();
-      for (Image image : images) {
-        nfvImages.add(Utils.getImage(image));
+      v2Images = os.imagesV2().list(map);
+    } catch (Exception e) {
+      log.warn("glance V2 doesn't work, it will attempt with V1");
+    }
+
+    if (v2Images == null || v2Images.isEmpty()) {
+      log.debug("glance v2 returned a null or empty list");
+
+      try {
+        v1Images = os.images().list(map);
+      } catch (Exception e) {
+        throw new VimDriverException("Both glance V1 & V2 don't work", e);
+      }
+    }
+
+    List<NFVImage> nfvImages = new ArrayList<>();
+
+    if (v2Images != null && !v2Images.isEmpty()) {
+      for (org.openstack4j.model.image.v2.Image v2Image : v2Images) {
+        nfvImages.add(Utils.getV2Image(v2Image));
       }
       log.info(
           "Listed images for VimInstance with name: "
               + vimInstance.getName()
               + " -> Images: "
-              + images);
+              + v2Images);
 
-      return nfvImages;
-    } catch (Exception e) {
-      log.error(e.getMessage(), e);
-      throw new VimDriverException(e.getMessage());
+    } else if (v1Images != null && !v1Images.isEmpty()) {
+      for (Image v1Image : v1Images) {
+        nfvImages.add(Utils.getV1Image(v1Image));
+      }
+      log.info(
+          "Listed images for VimInstance with name: "
+              + vimInstance.getName()
+              + " -> Images: "
+              + v1Images);
     }
+
+    return nfvImages;
   }
 
   @Override

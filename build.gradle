@@ -38,6 +38,9 @@ apply from: 'gradle/gradle/nexus.upload.plugin.gradle'
 apply from: 'gradle/gradle/command.line.helper.gradle'
 apply from: 'gradle/gradle/git.helpers.gradle'
 
+sourceCompatibility=1.8
+targetCompatibility=1.8
+
 /**
  * Project settings
  */
@@ -90,7 +93,9 @@ dependencies {
 
     compile 'org.apache.jclouds.labs:openstack-glance:2.0.0'
 
-    compile group: 'org.pacesys', name: 'openstack4j', version: '3.0.4'
+    //compile group: 'org.pacesys', name: 'openstack4j', version: '3.0.4'
+    compile files('libs/openstack4j-3.0.5-SNAPSHOT-withdeps.jar')
+
 
 
     // https://mvnrepository.com/artifact/commons-net/commons-net

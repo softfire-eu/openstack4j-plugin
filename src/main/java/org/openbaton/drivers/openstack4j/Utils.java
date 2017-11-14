@@ -81,7 +81,7 @@ class Utils {
     return image;
   }
 
-  static NFVImage getImage(Image image) {
+  static NFVImage getV1Image(Image image) {
     NFVImage nfvImage = new NFVImage();
     nfvImage.setName(image.getName());
     nfvImage.setExtId(image.getId());
@@ -90,6 +90,25 @@ class Utils {
     nfvImage.setCreated(image.getCreatedAt());
     nfvImage.setUpdated(image.getUpdatedAt());
     nfvImage.setIsPublic(image.isPublic());
+    nfvImage.setDiskFormat(image.getDiskFormat().toString().toUpperCase());
+    nfvImage.setContainerFormat(image.getContainerFormat().toString().toUpperCase());
+    nfvImage.setStatus(image.getStatus().value());
+    return nfvImage;
+  }
+
+  static NFVImage getV2Image(org.openstack4j.model.image.v2.Image image) {
+    NFVImage nfvImage = new NFVImage();
+    nfvImage.setName(image.getName());
+    nfvImage.setExtId(image.getId());
+    nfvImage.setMinRam(image.getMinRam());
+    nfvImage.setMinDiskSpace(image.getMinDisk());
+    nfvImage.setCreated(image.getCreatedAt());
+    nfvImage.setUpdated(image.getUpdatedAt());
+    if (image.getVisibility().equals(org.openstack4j.model.image.v2.Image.ImageVisibility.PUBLIC)) {
+      nfvImage.setIsPublic(true);
+    } else {
+      nfvImage.setIsPublic(false);
+    }
     nfvImage.setDiskFormat(image.getDiskFormat().toString().toUpperCase());
     nfvImage.setContainerFormat(image.getContainerFormat().toString().toUpperCase());
     nfvImage.setStatus(image.getStatus().value());
